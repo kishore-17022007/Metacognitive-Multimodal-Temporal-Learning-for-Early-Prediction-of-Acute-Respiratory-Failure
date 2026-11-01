@@ -1,0 +1,107 @@
+{
+  "normal": {
+    "n_windows": 610,
+    "mean_risk": 0.050792808812272536,
+    "mean_ensemble_std": 0.015362129364732253,
+    "ood_rate": 0.022950819672131147,
+    "drift_overall": "ok",
+    "n_features_alert": 0,
+    "n_features_warn": 0,
+    "avg_latency_ms_per_window": 0.082476229512335,
+    "top_drifted": [
+      "lactate",
+      "paco2",
+      "hemoglobin"
+    ]
+  },
+  "increasing_instability": {
+    "n_windows": 610,
+    "mean_risk": 0.5207906462660175,
+    "mean_ensemble_std": 0.12015061308151359,
+    "ood_rate": 0.6065573770491803,
+    "drift_overall": "alert",
+    "n_features_alert": 5,
+    "n_features_warn": 0,
+    "avg_latency_ms_per_window": 0.054722268849546396,
+    "top_drifted": [
+      "fio2",
+      "spo2",
+      "resp_rate"
+    ]
+  },
+  "missing_data": {
+    "n_windows": 610,
+    "mean_risk": 0.03918771925442224,
+    "mean_ensemble_std": 0.02437113750463413,
+    "ood_rate": 0.9918032786885246,
+    "drift_overall": "alert",
+    "n_features_alert": 10,
+    "n_features_warn": 0,
+    "avg_latency_ms_per_window": 0.05648476721720816,
+    "top_drifted": [
+      "pao2",
+      "paco2",
+      "lactate"
+    ]
+  },
+  "abnormal_inputs": {
+    "n_windows": 610,
+    "mean_risk": 0.09093321193539552,
+    "mean_ensemble_std": 0.057599646375906366,
+    "ood_rate": 1.0,
+    "drift_overall": "alert",
+    "n_features_alert": 6,
+    "n_features_warn": 0,
+    "avg_latency_ms_per_window": 0.05471400164409357,
+    "top_drifted": [
+      "hemoglobin",
+      "lactate",
+      "resp_rate"
+    ]
+  },
+  "gradual_drift": {
+    "n_windows": 610,
+    "mean_risk": 0.0687825350814297,
+    "mean_ensemble_std": 0.035204696472329766,
+    "ood_rate": 0.05737704918032787,
+    "drift_overall": "alert",
+    "n_features_alert": 3,
+    "n_features_warn": 0,
+    "avg_latency_ms_per_window": 0.06326782786941966,
+    "top_drifted": [
+      "hemoglobin",
+      "resp_rate",
+      "heart_rate"
+    ]
+  },
+  "abrupt_drift": {
+    "n_windows": 610,
+    "mean_risk": 0.10190425782873931,
+    "mean_ensemble_std": 0.04693444889493171,
+    "ood_rate": 0.09344262295081968,
+    "drift_overall": "alert",
+    "n_features_alert": 3,
+    "n_features_warn": 0,
+    "avg_latency_ms_per_window": 0.07616202295691035,
+    "top_drifted": [
+      "map",
+      "spo2",
+      "heart_rate"
+    ]
+  },
+  "high_latency": {
+    "n_windows": 610,
+    "mean_risk": 0.050792808812272536,
+    "mean_ensemble_std": 0.015362129364732253,
+    "ood_rate": 0.022950819672131147,
+    "drift_overall": "ok",
+    "n_features_alert": 0,
+    "n_features_warn": 0,
+    "avg_latency_ms_per_window": 329.98158915860876,
+    "top_drifted": [
+      "lactate",
+      "paco2",
+      "hemoglobin"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+[project]
+name = "tbi-mlops"
+version = "0.1.0"
+description = "Metacognitive multimodal temporal learning for early ARF prediction in TBI (synthetic-data research prototype)"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]

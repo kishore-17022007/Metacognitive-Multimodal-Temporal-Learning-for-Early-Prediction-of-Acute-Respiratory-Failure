@@ -1,0 +1,51 @@
+# Python environments
+.venv/
+.venv-*/
+venv/
+env/
+
+# Python cache and testing
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+.aws-sam/
+
+# Data files
+data/raw/*
+data/processed/*
+data/synthetic/*
+*.parquet
+*.npz
+
+# ML models and preprocessors
+artifacts/models/
+artifacts/preprocessors/
+
+# Experiment tracking
+mlruns/
+mlruns_local/
+
+# Local databases
+*.db
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Archives
+*.zip
+
+# Preserve empty folders
+!**/.gitkeep

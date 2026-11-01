@@ -1,0 +1,10 @@
+ensemble: {n_members: 5, max_iter: 80, learning_rate: 0.08, max_depth: 4}
+logistic: {C: 1.0, max_iter: 500}
+random_forest: {n_estimators: 150, max_depth: 8, min_samples_leaf: 5}
+transformer: {d_model: 32, n_heads: 2, n_layers: 2, dim_ff: 64, dropout: 0.1}
+graph: {node_dim: 16, n_heads: 2, n_layers: 2, dropout: 0.1}
+multitask: {w_binary: 1.0, w_trajectory: 0.5, w_survival: 1.0}
+profiles:
+  research:
+    ensemble: {n_members: 10, max_iter: 200}
+    transformer: {d_model: 64, n_heads: 4, n_layers: 4, dim_ff: 128}

@@ -1,0 +1,23 @@
+{
+  "extra_missing_cells": 8942,
+  "unit_errors_injected": {
+    "spo2": 68,
+    "fio2": 76,
+    "paco2": 22,
+    "hemoglobin": 19
+  },
+  "invalid_values_injected": 89,
+  "outliers_injected": 67,
+  "bad_dtype_cells_injected": 1676,
+  "corrupted_cells_injected": 670,
+  "bad_timestamps_injected": 44,
+  "exact_duplicates_injected": 223,
+  "conflicting_duplicates_injected": 67,
+  "n_patients": 800,
+  "n_rows_before_injection": 22357,
+  "n_rows_after_injection": 22647,
+  "event_rate_patients": 0.39125,
+  "unknown_outcome_patients": 26,
+  "outcome_definition": "RESEARCH LABEL (synthetic): acute respiratory failure (ARF) event time is drawn from a configurable generator; physiology drifts toward worse values before the event for non-abrupt events. This is NOT a validated clinical criterion and must be replaced by a clinically adjudicated definition for real data. Oxygen use, ventilation or a single abnormal vital sign alone do not define ARF.",
+  "synthetic": true
+}

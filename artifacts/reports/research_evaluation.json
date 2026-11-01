@@ -1,0 +1,1020 @@
+{
+  "title": "Research Evaluation: TBI Acute Respiratory Failure Prediction",
+  "data_provenance": "synthetic",
+  "disclaimer": "Research prototype on synthetic data. Not a diagnosis or clinical validation.",
+  "generated_at_utc": "2026-10-25T14:29:56.859614+00:00",
+  "dataset_version": "synthetic-2137239112",
+  "dataset_hash": 2137239112,
+  "seed": 42,
+  "stress_seed": 20261025,
+  "configuration": {
+    "data": {
+      "seed": 42,
+      "event_fraction": 0.35,
+      "abrupt_event_fraction": 0.2,
+      "unknown_outcome_fraction": 0.03,
+      "injection": {
+        "extra_missing_rate": 0.05,
+        "duplicate_rate": 0.01,
+        "conflicting_duplicate_rate": 0.003,
+        "unit_error_rate": 0.015,
+        "invalid_rate": 0.004,
+        "outlier_rate": 0.003,
+        "bad_dtype_rate": 0.005,
+        "corrupted_rate": 0.002,
+        "bad_timestamp_rate": 0.002
+      },
+      "outcome": {
+        "horizon_hours": 6,
+        "n_intervals": 6,
+        "window_length": 12,
+        "min_observations": 3,
+        "stride": 2
+      },
+      "split": {
+        "fractions": {
+          "train": 0.55,
+          "validation": 0.15,
+          "calibration": 0.15,
+          "test": 0.15
+        }
+      },
+      "n_patients": 800,
+      "stay_hours_min": 48,
+      "stay_hours_max": 96
+    },
+    "model": {
+      "ensemble": {
+        "n_members": 5,
+        "max_iter": 80,
+        "learning_rate": 0.08,
+        "max_depth": 4
+      },
+      "logistic": {
+        "C": 1.0,
+        "max_iter": 500
+      },
+      "random_forest": {
+        "n_estimators": 150,
+        "max_depth": 8,
+        "min_samples_leaf": 5
+      },
+      "transformer": {
+        "d_model": 32,
+        "n_heads": 2,
+        "n_layers": 2,
+        "dim_ff": 64,
+        "dropout": 0.1
+      },
+      "graph": {
+        "node_dim": 16,
+        "n_heads": 2,
+        "n_layers": 2,
+        "dropout": 0.1
+      },
+      "multitask": {
+        "w_binary": 1.0,
+        "w_trajectory": 0.5,
+        "w_survival": 1.0
+      }
+    },
+    "training": {
+      "seed": 42,
+      "torch": {
+        "epochs": 15,
+        "batch_size": 128,
+        "lr": 0.001,
+        "weight_decay": 0.0001,
+        "early_stopping_patience": 4,
+        "num_workers": 0
+      },
+      "reliability": {
+        "calibration_method": "sigmoid",
+        "conformal_alpha": 0.1,
+        "ood_flag_rate_on_validation": 0.05,
+        "ece_bins": 10,
+        "max_ensemble_std": 0.15,
+        "min_agreement": 0.8,
+        "review_probability_band": [
+          0.3,
+          0.7
+        ]
+      }
+    },
+    "monitoring": {
+      "drift": {
+        "psi_warn": 0.1,
+        "psi_alert": 0.25,
+        "ks_alpha": 0.01,
+        "missing_rate_delta_alert": 0.1
+      },
+      "data_quality": {
+        "max_missing_rate": 0.3,
+        "max_invalid_rate": 0.05,
+        "max_duplicate_rate": 0.02
+      },
+      "latency": {
+        "p95_alert_ms": 250
+      },
+      "performance": {
+        "min_matured_labels": 50,
+        "auroc_drop_alert": 0.1,
+        "ece_alert": 0.15
+      },
+      "stream_shift": {
+        "baseline_obs": 8,
+        "recent_obs": 8,
+        "z_alert": 1.5,
+        "min_features": 2
+      }
+    },
+    "simulation": {
+      "default_speed": 60,
+      "scenarios": [
+        "normal",
+        "increasing_instability",
+        "missing_data",
+        "abnormal_inputs",
+        "gradual_drift",
+        "abrupt_drift",
+        "high_latency"
+      ]
+    },
+    "profile": "dev"
+  },
+  "evaluation_code_version": "src-1a18a31f5b58",
+  "torch_training_record": {
+    "code_version": "src-cf304b9b99a3",
+    "seed": 42,
+    "checkpoint_sha256": {
+      "member_seed42.pt": "bb20e74200966b32a84cd19a204bbccaa4d14553f1fcefe49f166849972a02f9",
+      "member_seed43.pt": "d7d70a258feec507a3da9f2b099f74b8d5a4c990ae5e4da962b65dbc3a29d539",
+      "member_seed44.pt": "a79867e9ea893e6fca992dae9633ced9037ac1cdcd0dca62228ea436299b3777"
+    },
+    "checkpoint_report_dataset_match": true
+  },
+  "split_patient_counts": {
+    "train": 440,
+    "validation": 120,
+    "calibration": 120,
+    "test": 120
+  },
+  "patient_splits_disjoint": true,
+  "preprocessing_fit_scope": "training patients only (existing prepare pipeline)",
+  "offline_model": "PyTorch Transformer + physiological graph multi-task ensemble; existing checkpoints, no retraining",
+  "serving_model": "CPU reliability stack loaded by src/tbi_mlops/serving/predictor.py; PyTorch checkpoints are not used by Lambda inference",
+  "cpu_reliability_existing_results": {
+    "model_version": "v20261024-171511",
+    "test_metrics": {
+      "n": 1521,
+      "n_positive": 57,
+      "threshold": 0.3315092539260369,
+      "auroc": 0.9358882178122903,
+      "auprc": 0.7306927247406787,
+      "precision": 0.7115384615384616,
+      "recall": 0.6491228070175439,
+      "f1": 0.6788990825688074,
+      "brier": 0.017293243942470688,
+      "ece": 0.0078663166725212,
+      "confusion_matrix": [
+        [
+          1449,
+          15
+        ],
+        [
+          20,
+          37
+        ]
+      ]
+    },
+    "reliability": {
+      "conformal": {
+        "alpha": 0.1,
+        "qhat": 0.05529123213371134,
+        "empirical_coverage_test": 0.9151873767258383,
+        "avg_set_size": 0.9204470742932281,
+        "set_distribution": {
+          "empty": 121,
+          "{0}": 1399,
+          "{1}": 1,
+          "{0,1}": 0
+        },
+        "caveat": "marginal coverage assumes exchangeability; windows within a patient are dependent and drift breaks it"
+      },
+      "ood": {
+        "threshold": 0.4994132922814094,
+        "val_flag_rate": 0.05052631578947368,
+        "test_flag_rate": 0.0611439842209073
+      },
+      "ensemble": {
+        "mean_std_test": 0.012796195877617645,
+        "mean_agreement_test": 0.9930309007232084,
+        "n_members": 5
+      },
+      "calibration": {
+        "method": "sigmoid (Platt)",
+        "ece_raw": 0.005912839688450248,
+        "ece_calibrated": 0.0078663166725212,
+        "brier_raw": 0.017258151849284527,
+        "brier_calibrated": 0.017293243942470688
+      }
+    },
+    "survival": {
+      "c_index_test": 0.9343690874690729,
+      "brier": {
+        "k1": {
+          "brier": 0.006414160085402264,
+          "n": 1605,
+          "note": "no IPCW; censored-before-k excluded"
+        },
+        "k3": {
+          "brier": 0.016159428191753315,
+          "n": 1565,
+          "note": "no IPCW; censored-before-k excluded"
+        },
+        "k6": {
+          "brier": 0.018674952994872096,
+          "n": 1521,
+          "note": "no IPCW; censored-before-k excluded"
+        }
+      },
+      "survival_monotone": true,
+      "n_test_windows": 1605,
+      "n_events": 57,
+      "limitations": [
+        "Harrell C on windows (patient-dependent samples)",
+        "Brier without IPCW",
+        "trajectory head only available in the PyTorch multi-task model"
+      ]
+    },
+    "validation_window_count": 1507,
+    "test_window_count": 1605,
+    "ece_definition": "existing equal-width probability bins on [0,1], bins=10",
+    "ood_threshold_selection": "IsolationForest fit on training windows; anomaly cutoff is validation-score quantile, not test-selected",
+    "calibration_and_conformal_split": "calibrator and conformal quantile are fit on disjoint patient subsets of the calibration partition",
+    "interpretation_warning": "Ensemble member agreement/spread is descriptive and does not establish reliable uncertainty.",
+    "conformal_empty_set_count": 121,
+    "conformal_empty_set_interpretation": "For LAC scores 1-p_true, an empty set occurs when both class nonconformity scores exceed qhat. This is possible when qhat is small; empty sets are retained and counted, not silently converted to singleton sets.",
+    "validation_metric_availability": "The existing advanced report stores CPU-model test metrics but not a complete validation metric block; validation threshold selection and OOD threshold construction are documented in training.py.",
+    "ood_evaluation_on_torch_stress_inputs": "The existing CPU OOD detector and validation-selected threshold are evaluated on the same synthetic test windows and deterministic perturbed versions; no OOD model or threshold is refit.",
+    "note": "Existing saved CPU-model report; not metrics for the Torch model evaluated here."
+  },
+  "metrics": {
+    "binary_horizon_hours": 6.0,
+    "threshold": 0.526412308216095,
+    "threshold_selection": "F1-maximizing threshold on known validation labels only",
+    "ece_bins": 10,
+    "splits": {
+      "validation": {
+        "binary": {
+          "status": "ok",
+          "n": 1425,
+          "n_positive": 62,
+          "threshold": 0.526412308216095,
+          "auroc": 0.8480226256123826,
+          "auprc": 0.6631633075301507,
+          "brier": 0.02172682099953869,
+          "ece": 0.010013561807572843,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.8260869565217391,
+          "recall": 0.6129032258064516,
+          "f1": 0.7037037037037037,
+          "confusion_matrix": [
+            [
+              1355,
+              8
+            ],
+            [
+              24,
+              38
+            ]
+          ]
+        },
+        "trajectory": [
+          {
+            "horizon_hours": 1.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1507,
+              "n_positive": 11,
+              "threshold": 0.5,
+              "auroc": 0.8497204666990763,
+              "auprc": 0.30167846063129233,
+              "brier": 0.006145626458307869,
+              "ece": 0.0020715021117335133,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "confusion_matrix": [
+                [
+                  1496,
+                  0
+                ],
+                [
+                  11,
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 2.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1494,
+              "n_positive": 21,
+              "threshold": 0.5,
+              "auroc": 0.8737270875763747,
+              "auprc": 0.4776538754227344,
+              "brier": 0.009701711094191434,
+              "ece": 0.004096117728406006,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.75,
+              "recall": 0.14285714285714285,
+              "f1": 0.24,
+              "confusion_matrix": [
+                [
+                  1472,
+                  1
+                ],
+                [
+                  18,
+                  3
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 3.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1478,
+              "n_positive": 27,
+              "threshold": 0.5,
+              "auroc": 0.8038134619802435,
+              "auprc": 0.4638868195749345,
+              "brier": 0.012028581864743787,
+              "ece": 0.005741611071887486,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.5,
+              "recall": 0.25925925925925924,
+              "f1": 0.34146341463414637,
+              "confusion_matrix": [
+                [
+                  1444,
+                  7
+                ],
+                [
+                  20,
+                  7
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 4.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1465,
+              "n_positive": 39,
+              "threshold": 0.5,
+              "auroc": 0.8386017909159563,
+              "auprc": 0.5547063673839762,
+              "brier": 0.015099741790719257,
+              "ece": 0.006154845508908911,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.7307692307692307,
+              "recall": 0.48717948717948717,
+              "f1": 0.5846153846153846,
+              "confusion_matrix": [
+                [
+                  1419,
+                  7
+                ],
+                [
+                  20,
+                  19
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 5.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1445,
+              "n_positive": 48,
+              "threshold": 0.5,
+              "auroc": 0.8520042949176808,
+              "auprc": 0.6651398171713203,
+              "brier": 0.016917922778615674,
+              "ece": 0.007095814412169699,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.8,
+              "recall": 0.5,
+              "f1": 0.6153846153846154,
+              "confusion_matrix": [
+                [
+                  1391,
+                  6
+                ],
+                [
+                  24,
+                  24
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 6.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1425,
+              "n_positive": 62,
+              "threshold": 0.5,
+              "auroc": 0.8510046623908363,
+              "auprc": 0.6591873774285366,
+              "brier": 0.022201733514868986,
+              "ece": 0.008345643292393602,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.7755102040816326,
+              "recall": 0.6129032258064516,
+              "f1": 0.6846846846846847,
+              "confusion_matrix": [
+                [
+                  1352,
+                  11
+                ],
+                [
+                  24,
+                  38
+                ]
+              ]
+            }
+          }
+        ],
+        "survival": {
+          "n": 1507,
+          "n_events": 62,
+          "c_index": 0.8418634407351402,
+          "c_index_definition": "Harrell concordance on comparable event/censoring pairs; window-level pairs are dependent",
+          "brier_by_interval": {
+            "1": {
+              "brier": 0.006109271900961188,
+              "n": 1507,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "2": {
+              "brier": 0.009477862615593984,
+              "n": 1494,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "3": {
+              "brier": 0.011947503647668174,
+              "n": 1478,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "4": {
+              "brier": 0.014842638745110739,
+              "n": 1465,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "5": {
+              "brier": 0.016606962354122862,
+              "n": 1445,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "6": {
+              "brier": 0.02178362837058901,
+              "n": 1425,
+              "note": "no IPCW; censored-before-k excluded"
+            }
+          }
+        }
+      },
+      "test": {
+        "binary": {
+          "status": "ok",
+          "n": 1521,
+          "n_positive": 57,
+          "threshold": 0.526412308216095,
+          "auroc": 0.9335634167385677,
+          "auprc": 0.7534110917854201,
+          "brier": 0.016301833777238206,
+          "ece": 0.011279296471610578,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.7843137254901961,
+          "recall": 0.7017543859649122,
+          "f1": 0.7407407407407407,
+          "confusion_matrix": [
+            [
+              1453,
+              11
+            ],
+            [
+              17,
+              40
+            ]
+          ]
+        },
+        "trajectory": [
+          {
+            "horizon_hours": 1.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1605,
+              "n_positive": 10,
+              "threshold": 0.5,
+              "auroc": 0.9910971786833855,
+              "auprc": 0.3164774436090225,
+              "brier": 0.004898502952639942,
+              "ece": 0.002932582938056469,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "confusion_matrix": [
+                [
+                  1594,
+                  1
+                ],
+                [
+                  10,
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 2.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1589,
+              "n_positive": 26,
+              "threshold": 0.5,
+              "auroc": 0.91397214429844,
+              "auprc": 0.49812041927817063,
+              "brier": 0.010471285841393382,
+              "ece": 0.009230324434004537,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.625,
+              "recall": 0.19230769230769232,
+              "f1": 0.29411764705882354,
+              "confusion_matrix": [
+                [
+                  1560,
+                  3
+                ],
+                [
+                  21,
+                  5
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 3.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1565,
+              "n_positive": 28,
+              "threshold": 0.5,
+              "auroc": 0.9237847383585834,
+              "auprc": 0.6042929028846116,
+              "brier": 0.009124360506826504,
+              "ece": 0.010424763674642474,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.7222222222222222,
+              "recall": 0.4642857142857143,
+              "f1": 0.5652173913043478,
+              "confusion_matrix": [
+                [
+                  1532,
+                  5
+                ],
+                [
+                  15,
+                  13
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 4.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1550,
+              "n_positive": 36,
+              "threshold": 0.5,
+              "auroc": 0.9322801996183767,
+              "auprc": 0.8124027211765911,
+              "brier": 0.009286903068249298,
+              "ece": 0.009504338009808695,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.8214285714285714,
+              "recall": 0.6388888888888888,
+              "f1": 0.71875,
+              "confusion_matrix": [
+                [
+                  1509,
+                  5
+                ],
+                [
+                  13,
+                  23
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 5.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1532,
+              "n_positive": 45,
+              "threshold": 0.5,
+              "auroc": 0.93001569154898,
+              "auprc": 0.7664245425829775,
+              "brier": 0.012994663832826554,
+              "ece": 0.013353179336596018,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.7692307692307693,
+              "recall": 0.6666666666666666,
+              "f1": 0.7142857142857143,
+              "confusion_matrix": [
+                [
+                  1478,
+                  9
+                ],
+                [
+                  15,
+                  30
+                ]
+              ]
+            }
+          },
+          {
+            "horizon_hours": 6.0,
+            "target_definition": "synthetic event by interval end; only traj_valid targets",
+            "metrics": {
+              "status": "ok",
+              "n": 1521,
+              "n_positive": 57,
+              "threshold": 0.5,
+              "auroc": 0.9310348959831272,
+              "auprc": 0.7580411645275872,
+              "brier": 0.01624936547771202,
+              "ece": 0.009974981936914535,
+              "ece_definition": "equal-width probability bins on [0,1], bins=10",
+              "precision": 0.7755102040816326,
+              "recall": 0.6666666666666666,
+              "f1": 0.7169811320754716,
+              "confusion_matrix": [
+                [
+                  1453,
+                  11
+                ],
+                [
+                  19,
+                  38
+                ]
+              ]
+            }
+          }
+        ],
+        "survival": {
+          "n": 1605,
+          "n_events": 57,
+          "c_index": 0.9234463687963906,
+          "c_index_definition": "Harrell concordance on comparable event/censoring pairs; window-level pairs are dependent",
+          "brier_by_interval": {
+            "1": {
+              "brier": 0.004871081410942752,
+              "n": 1605,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "2": {
+              "brier": 0.00990409764404331,
+              "n": 1589,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "3": {
+              "brier": 0.008578290230130558,
+              "n": 1565,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "4": {
+              "brier": 0.008760150607901024,
+              "n": 1550,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "5": {
+              "brier": 0.012710035063297225,
+              "n": 1532,
+              "note": "no IPCW; censored-before-k excluded"
+            },
+            "6": {
+              "brier": 0.01599458817624803,
+              "n": 1521,
+              "note": "no IPCW; censored-before-k excluded"
+            }
+          }
+        }
+      }
+    },
+    "early_warning": {
+      "status": "ok",
+      "rule": "first validation-threshold alert before known synthetic event; negative alerts counted only at label-known prediction times",
+      "threshold": 0.526412308216095,
+      "eligible_events": 46,
+      "detected_events": 33,
+      "missed_events": 13,
+      "eligible_non_event_patients": 71,
+      "false_alert_patients": 3,
+      "false_alert_windows": 4,
+      "lead_time_distribution_hours": {
+        "n": 33,
+        "min_hours": 0.19050452565714338,
+        "q25_hours": 1.2341499662069424,
+        "median_hours": 3.103197635826543,
+        "mean_hours": 3.6129209411894947,
+        "q75_hours": 5.818448006424298,
+        "max_hours": 11.682982800572425
+      },
+      "event_definition": "synthetic generator event_observed/event_time_h; not a clinical endpoint"
+    },
+    "stress_tests": {
+      "random_vital_missingness_30pct": {
+        "sample_count": 1521,
+        "settings": {
+          "seed": 20261025,
+          "probability_per_selected_observed_cell": 0.3,
+          "groups": [
+            "respiratory",
+            "cardiovascular"
+          ],
+          "value_scaled_to_training_mean": true,
+          "observed_mask_set_false": true
+        },
+        "baseline_test_metrics": {
+          "status": "ok",
+          "n": 1521,
+          "n_positive": 57,
+          "threshold": 0.526412308216095,
+          "auroc": 0.9335634167385677,
+          "auprc": 0.7534110917854201,
+          "brier": 0.016301833777238206,
+          "ece": 0.011279296471610578,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.7843137254901961,
+          "recall": 0.7017543859649122,
+          "f1": 0.7407407407407407,
+          "confusion_matrix": [
+            [
+              1453,
+              11
+            ],
+            [
+              17,
+              40
+            ]
+          ]
+        },
+        "shifted_test_metrics": {
+          "status": "ok",
+          "n": 1521,
+          "n_positive": 57,
+          "threshold": 0.526412308216095,
+          "auroc": 0.9054740676828683,
+          "auprc": 0.574245617431968,
+          "brier": 0.02119778735474763,
+          "ece": 0.011581209402183592,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.7419354838709677,
+          "recall": 0.40350877192982454,
+          "f1": 0.5227272727272727,
+          "confusion_matrix": [
+            [
+              1456,
+              8
+            ],
+            [
+              34,
+              23
+            ]
+          ]
+        },
+        "cpu_serving_ood": {
+          "baseline_test_flag_rate": 0.05794392523364486,
+          "shifted_test_flag_rate": 0.45981308411214955,
+          "threshold_source": "pretrained CPU serving artifact; threshold selected on validation data"
+        },
+        "interpretation": "synthetic input perturbation; original test labels and inputs remain unchanged"
+      },
+      "vital_measurement_noise": {
+        "sample_count": 1521,
+        "settings": {
+          "seed": 20261025,
+          "gaussian_sd": 0.2,
+          "units": "preprocessed standard-deviation units",
+          "groups": [
+            "respiratory",
+            "cardiovascular"
+          ],
+          "observed_values_only": true
+        },
+        "baseline_test_metrics": {
+          "status": "ok",
+          "n": 1521,
+          "n_positive": 57,
+          "threshold": 0.526412308216095,
+          "auroc": 0.9335634167385677,
+          "auprc": 0.7534110917854201,
+          "brier": 0.016301833777238206,
+          "ece": 0.011279296471610578,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.7843137254901961,
+          "recall": 0.7017543859649122,
+          "f1": 0.7407407407407407,
+          "confusion_matrix": [
+            [
+              1453,
+              11
+            ],
+            [
+              17,
+              40
+            ]
+          ]
+        },
+        "shifted_test_metrics": {
+          "status": "ok",
+          "n": 1521,
+          "n_positive": 57,
+          "threshold": 0.526412308216095,
+          "auroc": 0.9332158949285784,
+          "auprc": 0.7582833308880984,
+          "brier": 0.01603632367726251,
+          "ece": 0.010078010093579944,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.78,
+          "recall": 0.6842105263157895,
+          "f1": 0.7289719626168224,
+          "confusion_matrix": [
+            [
+              1453,
+              11
+            ],
+            [
+              18,
+              39
+            ]
+          ]
+        },
+        "cpu_serving_ood": {
+          "baseline_test_flag_rate": 0.05794392523364486,
+          "shifted_test_flag_rate": 0.058566978193146414,
+          "threshold_source": "pretrained CPU serving artifact; threshold selected on validation data"
+        },
+        "interpretation": "synthetic input perturbation; original test labels and inputs remain unchanged"
+      },
+      "recent_gap_channel_shift": {
+        "sample_count": 1521,
+        "settings": {
+          "additive_shift": 0.5,
+          "channel": "preprocessed log-gap channel at prediction step",
+          "units": "preprocessed channel units"
+        },
+        "baseline_test_metrics": {
+          "status": "ok",
+          "n": 1521,
+          "n_positive": 57,
+          "threshold": 0.526412308216095,
+          "auroc": 0.9335634167385677,
+          "auprc": 0.7534110917854201,
+          "brier": 0.016301833777238206,
+          "ece": 0.011279296471610578,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.7843137254901961,
+          "recall": 0.7017543859649122,
+          "f1": 0.7407407407407407,
+          "confusion_matrix": [
+            [
+              1453,
+              11
+            ],
+            [
+              17,
+              40
+            ]
+          ]
+        },
+        "shifted_test_metrics": {
+          "status": "ok",
+          "n": 1521,
+          "n_positive": 57,
+          "threshold": 0.526412308216095,
+          "auroc": 0.9335154826958105,
+          "auprc": 0.7522913011310854,
+          "brier": 0.016369819070428525,
+          "ece": 0.011450797992187168,
+          "ece_definition": "equal-width probability bins on [0,1], bins=10",
+          "precision": 0.7843137254901961,
+          "recall": 0.7017543859649122,
+          "f1": 0.7407407407407407,
+          "confusion_matrix": [
+            [
+              1453,
+              11
+            ],
+            [
+              17,
+              40
+            ]
+          ]
+        },
+        "cpu_serving_ood": {
+          "baseline_test_flag_rate": 0.05794392523364486,
+          "shifted_test_flag_rate": 0.06791277258566979,
+          "threshold_source": "pretrained CPU serving artifact; threshold selected on validation data"
+        },
+        "interpretation": "synthetic input perturbation; original test labels and inputs remain unchanged"
+      }
+    },
+    "torch_occlusion_example": {
+      "method": "single-window feature-by-time occlusion on the Torch ensemble binary head",
+      "baseline_probability": 0.006280908361077309,
+      "top_effects": [
+        {
+          "relative_step": 0,
+          "feature": "fio2",
+          "baseline_minus_occluded_risk": -0.0014190706424415112
+        },
+        {
+          "relative_step": 0,
+          "feature": "map",
+          "baseline_minus_occluded_risk": 0.0009677414782345295
+        },
+        {
+          "relative_step": 0,
+          "feature": "sbp",
+          "baseline_minus_occluded_risk": 0.0007734796963632107
+        },
+        {
+          "relative_step": 0,
+          "feature": "gcs_total",
+          "baseline_minus_occluded_risk": 0.0006153900176286697
+        },
+        {
+          "relative_step": 0,
+          "feature": "heart_rate",
+          "baseline_minus_occluded_risk": -0.0005977950058877468
+        },
+        {
+          "relative_step": 0,
+          "feature": "spo2",
+          "baseline_minus_occluded_risk": -0.0005431068129837513
+        },
+        {
+          "relative_step": -1,
+          "feature": "fio2",
+          "baseline_minus_occluded_risk": -0.0004638112150132656
+        },
+        {
+          "relative_step": -2,
+          "feature": "fio2",
+          "baseline_minus_occluded_risk": -0.00035190628841519356
+        },
+        {
+          "relative_step": -2,
+          "feature": "resp_rate",
+          "baseline_minus_occluded_risk": -0.0003391173668205738
+        },
+        {
+          "relative_step": 0,
+          "feature": "dbp",
+          "baseline_minus_occluded_risk": -0.0003223419189453125
+        }
+      ],
+      "interpretation": "predictive sensitivity only; not causal; one synthetic held-out window"
+    }
+  },
+  "unavailable_or_limited": [
+    "No real clinical validation or real-world distribution-shift evaluation is possible with synthetic-only data.",
+    "Survival Brier scores use the existing complete-case censoring simplification without IPCW.",
+    "Torch checkpoints match the saved report dataset version, but the old report has no checkpoint hashes; hashes are recorded for this evaluation.",
+    "Event-warning results use synthetic event_time_h and validation-selected threshold; they are not clinical lead-time estimates."
+  ]
+}

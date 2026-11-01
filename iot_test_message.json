@@ -1,0 +1,22 @@
+{
+  "patient_id": "SYNTH-IOT-001",
+  "timestamp": "2026-10-25T10:00:00Z",
+  "hours_since_admission": 12,
+  "gcs_total": 14,
+  "pupil_response": 2,
+  "sedated": 0,
+  "resp_rate": 18,
+  "spo2": 97,
+  "o2_support": 0,
+  "fio2": 0.21,
+  "pao2": 95,
+  "paco2": 40,
+  "heart_rate": 82,
+  "sbp": 120,
+  "dbp": 75,
+  "map": 90,
+  "lactate": 1.2,
+  "hemoglobin": 13.5,
+  "data_source": "iot_demo",
+  "is_synthetic": true
+}

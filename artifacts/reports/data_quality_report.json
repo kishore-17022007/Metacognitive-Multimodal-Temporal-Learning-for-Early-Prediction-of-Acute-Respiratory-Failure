@@ -1,0 +1,173 @@
+{
+  "clean_report": {
+    "before": {
+      "rows": 22647,
+      "columns": 20,
+      "missing_per_variable": {
+        "gcs_total": 4687,
+        "pupil_response": 152,
+        "sedated": 161,
+        "resp_rate": 1260,
+        "spo2": 1191,
+        "o2_support": 1298,
+        "fio2": 1241,
+        "pao2": 18173,
+        "paco2": 18179,
+        "heart_rate": 1246,
+        "sbp": 1256,
+        "dbp": 1252,
+        "map": 1236,
+        "lactate": 18148,
+        "hemoglobin": 18171
+      },
+      "non_numeric_tokens": {
+        "gcs_total": 95,
+        "pupil_response": 100,
+        "sedated": 102,
+        "resp_rate": 109,
+        "spo2": 112,
+        "o2_support": 100,
+        "fio2": 104,
+        "pao2": 103,
+        "paco2": 116,
+        "heart_rate": 91,
+        "sbp": 82,
+        "dbp": 102,
+        "map": 87,
+        "lactate": 107,
+        "hemoglobin": 106
+      },
+      "invalid_per_variable": {
+        "gcs_total": 21,
+        "pupil_response": 0,
+        "sedated": 0,
+        "resp_rate": 20,
+        "spo2": 85,
+        "o2_support": 0,
+        "fio2": 76,
+        "pao2": 0,
+        "paco2": 23,
+        "heart_rate": 16,
+        "sbp": 15,
+        "dbp": 0,
+        "map": 0,
+        "lactate": 0,
+        "hemoglobin": 19
+      },
+      "duplicate_patient_time": 291,
+      "unparseable_timestamps": 45
+    },
+    "steps": {
+      "rows_removed_bad_timestamp": 45,
+      "duplicates_removed": 289,
+      "conflicting_duplicates_kept_first": 62,
+      "unit_corrections": {
+        "spo2": 66,
+        "fio2": 75,
+        "paco2": 22,
+        "hemoglobin": 19
+      },
+      "invalid_set_to_missing": {
+        "gcs_total": 19,
+        "pupil_response": 0,
+        "sedated": 0,
+        "resp_rate": 20,
+        "spo2": 17,
+        "o2_support": 0,
+        "fio2": 0,
+        "pao2": 0,
+        "paco2": 0,
+        "heart_rate": 15,
+        "sbp": 15,
+        "dbp": 0,
+        "map": 0,
+        "lactate": 0,
+        "hemoglobin": 0
+      },
+      "outlier_flags_not_removed": {
+        "resp_rate": 17,
+        "spo2": 0,
+        "fio2": 1510,
+        "pao2": 0,
+        "paco2": 0,
+        "heart_rate": 11,
+        "sbp": 15,
+        "dbp": 0,
+        "map": 0,
+        "lactate": 24,
+        "hemoglobin": 0
+      }
+    },
+    "after": {
+      "rows": 22313,
+      "columns": 20,
+      "missing_per_variable": {
+        "gcs_total": 4624,
+        "pupil_response": 148,
+        "sedated": 159,
+        "resp_rate": 1261,
+        "spo2": 1189,
+        "o2_support": 1274,
+        "fio2": 1227,
+        "pao2": 17897,
+        "paco2": 17903,
+        "heart_rate": 1246,
+        "sbp": 1258,
+        "dbp": 1239,
+        "map": 1218,
+        "lactate": 17871,
+        "hemoglobin": 17895
+      },
+      "duplicate_patient_time": 0,
+      "invalid_per_variable": {
+        "gcs_total": 0,
+        "pupil_response": 0,
+        "sedated": 0,
+        "resp_rate": 0,
+        "spo2": 0,
+        "o2_support": 0,
+        "fio2": 0,
+        "pao2": 0,
+        "paco2": 0,
+        "heart_rate": 0,
+        "sbp": 0,
+        "dbp": 0,
+        "map": 0,
+        "lactate": 0,
+        "hemoglobin": 0
+      }
+    },
+    "unresolved": {
+      "note": "Remaining missing values are genuine/unrecoverable and are modelled with masks; extreme outliers retained but flagged.",
+      "total_missing_cells_after": 86409
+    }
+  },
+  "partition_stats": {
+    "train": {
+      "windows": 5479,
+      "patients": 426,
+      "positive_rate": 0.04349507055867002
+    },
+    "validation": {
+      "windows": 1507,
+      "patients": 116,
+      "positive_rate": 0.04350877192982456
+    },
+    "calibration": {
+      "windows": 1495,
+      "patients": 115,
+      "positive_rate": 0.043048694424841216
+    },
+    "test": {
+      "windows": 1605,
+      "patients": 117,
+      "positive_rate": 0.03747534516765286
+    }
+  },
+  "n_windows": 10086,
+  "channels": 47,
+  "window_length": 12,
+  "raw_data_hash": 2137239112,
+  "dataset_version": "synthetic-2137239112",
+  "synthetic": true
+}

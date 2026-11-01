@@ -1,0 +1,733 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ICU IoT Monitoring &amp; Alert Simulation</title>
+<style>
+:root{color-scheme:light dark;--bg:#f4f6f8;--card:#fff;--tx:#17202a;--mut:#5d6b78;--bd:#d9e0e6;--ac:#1f7a8c;--ok:#2e8b57;--warn:#d9822b;--crit:#c0392b;--log:#101820;--logtx:#b8f0c8}
+@media(prefers-color-scheme:dark){:root{--bg:#0f151b;--card:#18212a;--tx:#e6edf3;--mut:#93a3b1;--bd:#2a3743;--ac:#4fb3c7;--ok:#4cc38a;--warn:#f0a04b;--crit:#ff6b5b;--log:#0a0f14;--logtx:#9be7b3}}
+[data-theme=light]{color-scheme:light;--bg:#f4f6f8;--card:#fff;--tx:#17202a;--mut:#5d6b78;--bd:#d9e0e6;--ac:#1f7a8c;--ok:#2e8b57;--warn:#d9822b;--crit:#c0392b;--log:#101820;--logtx:#b8f0c8}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:1450px;margin:auto}
+.banner{background:var(--card);border-left:4px solid var(--warn);padding:10px 12px;border-radius:7px;color:var(--mut);margin-bottom:12px}
+h1{font-size:22px;margin:8px 0 14px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:0 0 9px}
+.grid{display:grid;grid-template-columns:minmax(240px,1fr) minmax(300px,2fr) minmax(270px,1.25fr);gap:12px}
+@media(max-width:950px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;align-items:center}
+button,select{font:inherit;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;cursor:pointer}
+button.primary{background:var(--ac);color:#fff;border-color:var(--ac)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.dev{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;background:var(--ok)}
+.dot.off{background:var(--crit)}
+.dot.deg{background:var(--warn)}
+.big{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
+.kpi{border:1px solid var(--bd);border-radius:8px;padding:9px 4px;text-align:center}
+.kpi b{display:block;font-size:22px}
+.kpi span{font-size:11px;color:var(--mut)}
+.pill{display:inline-block;padding:3px 9px;border-radius:12px;font-size:12px;font-weight:650;color:#fff;background:var(--ok)}
+.chart{width:100%;height:150px;display:block;margin:8px 0}
+.log{background:var(--log);color:var(--logtx);font:11.5px/1.5 ui-monospace,Menlo,Consolas,monospace;height:210px;overflow:auto;border-radius:7px;padding:9px;white-space:pre-wrap;overflow-wrap:anywhere}
+.alert{border:1px solid var(--bd);border-left:5px solid var(--warn);border-radius:7px;padding:9px;margin-bottom:8px}
+.alert.critical{border-left-color:var(--crit)}
+.alert.info{border-left-color:var(--ac)}
+.alert.done{opacity:.6}
+small,.muted{color:var(--mut)}
+label{display:flex;gap:6px;align-items:center}
+.statusline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.notice{font-size:12px;color:var(--mut);padding:10px;border:1px dashed var(--bd);border-radius:7px;margin-top:12px}
+.section{margin-top:15px}
+.tiny{font-size:12px;color:var(--mut);overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <b>Simulation only.</b> All patients, devices and readings are synthetic.
+  This page's illustrative risk score is a demo formula, <b>not your trained model</b>,
+  not a diagnosis, and not a clinical tool. AWS publishing sends synthetic observations
+  only; it does not make the displayed risk score a model prediction.
+</div>
+
+<h1>🫁 Bed 12 · TBI patient · IoT monitoring &amp; alert simulation</h1>
+
+<div class="grid">
+
+<section class="card">
+  <h2>Controls</h2>
+  <div class="row">
+    <button class="primary" id="go">▶ Start</button>
+    <button id="step">Step</button>
+    <button id="reset">Reset</button>
+    <button id="test">🔔 Test alert</button>
+    <button class="primary" id="publish">☁ Publish to AWS</button>
+  </div>
+  <div id="awsStatus" class="tiny" role="status" aria-live="polite">
+    AWS: Not connected yet. Generate a reading to publish.
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <label>Speed
+      <select id="speed">
+        <option value="1">1×</option>
+        <option value="2" selected>2×</option>
+        <option value="5">5×</option>
+        <option value="10">10×</option>
+      </select>
+    </label>
+  </div>
+
+  <h2>Scenario</h2>
+  <div class="row">
+    <select id="scenario" style="width:100%">
+      <option value="stable">Stable patient</option>
+      <option value="decline">Gradual respiratory decline</option>
+      <option value="alertdemo">⚡ Alert demo</option>
+      <option value="sudden">Sudden desaturation</option>
+      <option value="tachy">Respiratory distress (high RR + HR)</option>
+      <option value="o2fail">O₂ delivery failure</option>
+      <option value="dropout">Sensor dropout (SpO₂)</option>
+      <option value="glitch">Sensor glitch (impossible values)</option>
+      <option value="recover">Recovery</option>
+    </select>
+  </div>
+
+  <h2>Devices (simulated MQTT feeds)</h2>
+  <div id="devices"></div>
+
+  <div class="section">
+    <h2>Staff (simulated)</h2>
+    <label><input type="checkbox" id="nurse" checked> Bedside nurse acknowledges alerts</label>
+    <p class="tiny">Untick to see demo alerts escalate to the on-call doctor after a delay.</p>
+  </div>
+
+  <div class="notice">
+    <b>AWS connection:</b> The Publish to AWS button sends a synthetic observation
+    to your API Gateway publisher, which publishes it to AWS IoT Core.
+    The backend processor handles the observation. The displayed risk score and
+    staff alerts on this page remain part of the browser simulation.
+  </div>
+</section>
+
+<section class="card">
+  <h2>Live monitor <span id="clock" style="float:right;text-transform:none">08:00</span></h2>
+  <div class="big">
+    <div class="kpi"><b id="spo2">–</b><span>SpO₂ %</span></div>
+    <div class="kpi"><b id="rr">–</b><span>Resp rate</span></div>
+    <div class="kpi"><b id="hr">–</b><span>Heart rate</span></div>
+    <div class="kpi"><b id="fio2">–</b><span>FiO₂</span></div>
+  </div>
+  <div class="statusline">
+    Illustrative demo risk: <b id="risk">–</b>
+    <span id="status" class="pill">idle</span>
+  </div>
+  <svg class="chart" id="vitals" viewBox="0 0 600 150" role="img" aria-label="Synthetic vital sign chart"></svg>
+  <svg class="chart" id="risks" viewBox="0 0 600 150" role="img" aria-label="Illustrative demo risk chart"></svg>
+  <div id="why" class="muted">Press Start to begin streaming synthetic observations.</div>
+</section>
+
+<section class="card">
+  <h2>Alerts &amp; notifications</h2>
+  <div id="report"></div>
+  <div id="alerts" class="muted">No alerts.</div>
+  <h2 class="section">Real-time device log</h2>
+  <div id="log" class="log" aria-live="polite"></div>
+</section>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const devices = {
+  spo2: 'pulse-oximeter',
+  vent: 'o2-delivery/vent',
+  ecg: 'ecg-bp-monitor',
+  lab: 'lab-analyzer'
+};
+
+/*
+ * Existing API Gateway publisher endpoint.
+ * Do not put AWS access keys or secret keys in browser code.
+ */
+const PUBLISH_URL =
+  'https://11wnjwmqhi.execute-api.ap-southeast-2.amazonaws.com/publish';
+
+let S, timer;
+
+function init() {
+  clearInterval(timer);
+
+  S = {
+    t: 0,
+    sev: 0,
+    run: false,
+    hist: [],
+    risk: [],
+    online: {spo2:true, vent:true, ecg:true, lab:true},
+    alerts: [],
+    level: 0,
+    calm: 0,
+    id: 0,
+    off: {},
+    logs: [],
+    masked: 0
+  };
+
+  $('log').textContent = '';
+  $('alerts').textContent = 'No alerts.';
+  $('report').textContent = '';
+  $('go').textContent = '▶ Start';
+
+  drawDevices();
+  update();
+  log('system', 'simulation reset · scenario=' + $('scenario').value);
+}
+
+function drawDevices() {
+  const root = $('devices');
+  root.innerHTML = '';
+
+  for (const k in devices) {
+    const d = document.createElement('div');
+    d.className = 'dev';
+
+    const left = document.createElement('span');
+    const dot = document.createElement('i');
+    dot.className = 'dot' + (S.online[k] ? '' : ' off');
+
+    left.append(dot, document.createTextNode(devices[k]));
+
+    const b = document.createElement('button');
+    b.textContent = S.online[k] ? 'Disconnect' : 'Reconnect';
+
+    b.onclick = () => {
+      S.online[k] = !S.online[k];
+      drawDevices();
+      log(devices[k], S.online[k] ? 'reconnected' : 'connection lost');
+    };
+
+    d.append(left, b);
+    root.append(d);
+  }
+}
+
+function clock() {
+  return String((8 + Math.floor(S.t / 60)) % 24).padStart(2, '0') +
+    ':' + String(S.t % 60).padStart(2, '0');
+}
+
+function log(src, msg) {
+  const line = '[' + clock() + ':00] ' + src + ' → ' + msg;
+  S.logs.push(line);
+
+  const el = document.createElement('div');
+  el.textContent = line;
+  $('log').append(el);
+  $('log').scrollTop = $('log').scrollHeight;
+
+  while ($('log').children.length > 300) {
+    $('log').firstChild.remove();
+  }
+}
+
+function target() {
+  let sc = $('scenario').value;
+  let t = S.t;
+
+  if (sc === 'stable') return 0;
+  if (sc === 'decline') return Math.min(3.2, t / 18);
+  if (sc === 'sudden') return t > 20 ? 3 : 0;
+  if (sc === 'alertdemo') return Math.min(3.2, t / 6);
+  if (sc === 'tachy') return t > 10 ? 1.5 : 0;
+  if (sc === 'o2fail') return t > 15 ? 2.8 : 0;
+  if (sc === 'recover') return Math.max(0, S.sev - .08);
+
+  return S.sev;
+}
+
+function raise(level, msg, to, page = false) {
+  const a = {
+    id: ++S.id,
+    level,
+    msg,
+    to,
+    t: S.t,
+    ack: false,
+    esc: false,
+    auto: false,
+    wall: Date.now(),
+    by: ''
+  };
+
+  S.alerts.unshift(a);
+  log('alert-engine', 'NOTIFY ' + to + ': ' + msg);
+
+  if (page) log('pager', 'simulated page to on-call doctor');
+
+  renderAlerts();
+
+  $('report').innerHTML =
+    '<div class="alert critical">' +
+    '<b>⚠ Simulated deterioration event</b>' +
+    '<p>An incident summary is available for this browser simulation.</p>' +
+    '<button id="download">Download simulation report</button>' +
+    '</div>';
+
+  $('download').onclick = downloadReport;
+}
+
+function tick() {
+  S.t++;
+
+  let sc = $('scenario').value;
+
+  if (sc === 'o2fail' && S.t === 15 && S.online.vent) {
+    S.online.vent = false;
+    drawDevices();
+    log('o2-delivery/bed12', 'connection lost (simulated supply fault)');
+  }
+
+  let tgt = target();
+  S.sev += (tgt - S.sev) * (sc === 'recover' || sc === 'alertdemo' ? 1 : .15);
+  let s = S.sev;
+
+  let n = (a, d) =>
+    a + (Math.random() + Math.random() + Math.random() - 1.5) * d;
+
+  let v = {
+    spo2: Math.min(100, n(97 - 1.7 * s, .7)),
+    rr: n(16 + 3 * s + ((sc === 'tachy' && S.t > 10) ? 12 : 0), 1.2),
+    hr: n(78 + 5 * s + ((sc === 'tachy' && S.t > 10) ? 35 : 0), 2.5),
+    fio2: Math.min(1, .21 + .12 * Math.max(0, s - .5)),
+    sbp: n(124 - 3 * s, 4)
+  };
+
+  let sp = S.online.spo2 ? v.spo2 : null;
+
+  if (sc === 'dropout' && S.t > 15 && Math.random() < .8) {
+    sp = null;
+  }
+
+  if (sc === 'glitch' && S.t > 15 && Math.random() < .5) {
+    sp = [150, 0, -5][Math.floor(Math.random() * 3)];
+  }
+
+  if (sp != null && (sp < 50 || sp > 100)) {
+    log('validator', 'impossible SpO₂ value masked as missing');
+    S.masked++;
+    sp = null;
+  }
+
+  let rr = S.online.ecg ? v.rr : null;
+  let hr = S.online.ecg ? v.hr : null;
+  let f = S.online.vent ? v.fio2 : null;
+
+  for (const k in devices) {
+    let off = !S.online[k] || (k === 'spo2' && sp == null);
+    S.off[k] = off ? (S.off[k] || 0) + 1 : 0;
+
+    if (S.off[k] === 4) {
+      raise(
+        'info',
+        'Technical: ' + devices[k] +
+          ' has no valid data for 4 simulated minutes. Check sensor/connection.',
+        'Bedside nurse'
+      );
+    }
+  }
+
+  S.hist.push({t:S.t, spo2:sp, rr, hr, fio2:f});
+  if (S.hist.length > 90) S.hist.shift();
+
+  const rec = S.hist.slice(-6);
+  const missing =
+    rec.filter(r => r.spo2 == null || r.rr == null).length /
+    Math.max(1, rec.length);
+
+  let last = k => {
+    for (let i = S.hist.length - 1; i >= Math.max(0, S.hist.length - 8); i--) {
+      if (S.hist[i][k] != null) return S.hist[i][k];
+    }
+    return null;
+  };
+
+  sp = last('spo2');
+  rr = last('rr');
+  hr = last('hr');
+  f = last('fio2') ?? .21;
+
+  let risk = null;
+  let status = 'reliable';
+  let why = '';
+
+  if (sp == null || rr == null || S.hist.length < 3 || missing > .5) {
+    status = 'insufficient data';
+    why = 'Missing or invalid readings: no trustworthy demo estimate shown.';
+  } else {
+    let old = S.hist.slice(-12).find(r => r.spo2 != null);
+    let trend = old ? Math.max(0, old.spo2 - sp) : 0;
+
+    let z = -4.5 +
+      .25 * (rr - 18) +
+      .45 * (95 - sp) +
+      .04 * ((hr ?? 80) - 85) +
+      4 * (f - .21) +
+      .4 * trend;
+
+    risk = 1 / (1 + Math.exp(-z));
+    S.ema = S.ema == null ? risk : .6 * S.ema + .4 * risk;
+    risk = S.ema;
+
+    why = 'Demo formula drivers: SpO₂ ' + Math.round(sp) +
+      '%, RR ' + Math.round(rr) +
+      ', HR ' + Math.round(hr ?? 0) +
+      ', FiO₂ ' + f.toFixed(2) +
+      '. Not the trained model.';
+
+    if (missing > .2) status = 'review required';
+  }
+
+  S.risk.push(risk);
+  if (S.risk.length > 90) S.risk.shift();
+
+  $('spo2').textContent = sp == null ? '–' : Math.round(sp);
+  $('rr').textContent = rr == null ? '–' : Math.round(rr);
+  $('hr').textContent = hr == null ? '–' : Math.round(hr);
+  $('fio2').textContent = f.toFixed(2);
+  $('risk').textContent = risk == null ? 'n/a' : risk.toFixed(2);
+  $('why').textContent = why;
+  $('clock').textContent = 'sim time ' + clock();
+  $('status').textContent = status;
+  $('status').style.background =
+    status === 'reliable' ? 'var(--ok)' : 'var(--warn)';
+
+  drawCharts();
+
+  if (risk != null) alertsFor(risk, sp, rr, hr);
+
+  checkAck();
+}
+
+function alertsFor(risk, sp, rr, hr) {
+  const lv = risk >= .7 ? 3 : risk >= .5 ? 2 : risk >= .3 ? 1 : 0;
+
+  if (lv > S.level) {
+    let to = lv === 1
+      ? 'Bedside nurse'
+      : lv === 2
+        ? 'Bedside nurse + charge nurse'
+        : 'On-call doctor + bedside nurse';
+
+    raise(
+      lv === 3 ? 'critical' : 'warning',
+      ['','WATCH','WARNING','CRITICAL'][lv] +
+        ' · Bed 12: illustrative demo score ' + risk.toFixed(2) +
+        ' (SpO₂ ' + Math.round(sp) +
+        '%, RR ' + Math.round(rr) +
+        ', HR ' + Math.round(hr || 0) + ').',
+      to,
+      lv === 3
+    );
+
+    S.level = lv;
+  }
+
+  if (risk < .2) {
+    S.calm++;
+
+    if (S.calm >= 5 && S.level > 0) {
+      S.level = 0;
+      log('alert-engine', 'demo score below 0.20 for 5 ticks → alerts cleared');
+
+      S.alerts.forEach(a => {
+        if (!a.ack && a.level !== 'info') a.auto = true;
+      });
+
+      renderAlerts();
+    }
+  } else {
+    S.calm = 0;
+  }
+}
+
+function checkAck() {
+  S.alerts.forEach(a => {
+    if (a.level === 'warning' || a.level === 'critical') {
+      if (!a.ack && !a.esc && !a.auto &&
+          Date.now() - a.wall > 12000 && !$('nurse').checked) {
+        a.esc = true;
+        log('alert-engine', 'alert #' + a.id +
+          ' unacknowledged → simulated escalation to doctor');
+        renderAlerts();
+      } else if (!a.ack && !a.esc && $('nurse').checked &&
+                 Date.now() - a.wall > 3500) {
+        a.ack = true;
+        a.by = 'Bedside nurse (simulated)';
+        log('staff', 'alert #' + a.id + ' acknowledged automatically');
+        renderAlerts();
+      }
+    }
+  });
+}
+
+function renderAlerts() {
+  const box = $('alerts');
+  box.innerHTML = '';
+
+  if (!S.alerts.length) {
+    box.textContent = 'No alerts.';
+    return;
+  }
+
+  S.alerts.slice(0, 8).forEach(a => {
+    const d = document.createElement('div');
+    d.className = 'alert ' + a.level +
+      ((a.ack || a.auto) ? ' done' : '');
+
+    const h = document.createElement('b');
+    h.textContent =
+      (a.level === 'info' ? 'ℹ Technical' :
+       a.level === 'critical' ? '🔴 Critical' : '🟠 Warning') +
+      ' #' + a.id;
+
+    const small = document.createElement('small');
+    small.textContent = ' → ' + a.to + ' · sim ' + clock();
+
+    const msg = document.createElement('p');
+    msg.textContent = a.msg;
+
+    d.append(h, small, msg);
+
+    const foot = document.createElement('div');
+
+    if (a.esc) {
+      foot.textContent = '⬆ Escalated to on-call doctor (simulated)';
+    } else if (a.auto) {
+      foot.textContent = 'Cleared automatically (simulated)';
+    } else if (a.ack) {
+      foot.textContent = '✔ Acknowledged by ' + a.by;
+    } else {
+      const b = document.createElement('button');
+      b.textContent = 'Acknowledge';
+
+      b.onclick = () => {
+        a.ack = true;
+        a.by = 'you';
+        log('staff', 'alert #' + a.id + ' acknowledged manually');
+        renderAlerts();
+      };
+
+      foot.append(b);
+    }
+
+    d.append(foot);
+    box.append(d);
+  });
+}
+
+function poly(vals, min, max, color) {
+  let pts = [];
+
+  vals.forEach((v, i) => {
+    if (v == null) return;
+
+    let x = 10 + i / Math.max(1, vals.length - 1) * 580;
+    let y = 135 -
+      (Math.max(min, Math.min(max, v)) - min) / (max - min) * 115;
+
+    pts.push(x.toFixed(1) + ',' + y.toFixed(1));
+  });
+
+  return pts.length
+    ? '<polyline points="' + pts.join(' ') +
+      '" fill="none" stroke="' + color + '" stroke-width="2.5"/>'
+    : '';
+}
+
+function drawCharts() {
+  let h = S.hist;
+
+  $('vitals').innerHTML =
+    '<rect x="0" y="0" width="600" height="150" fill="none" stroke="var(--bd)"/>' +
+    '<text x="10" y="14" fill="var(--mut)" font-size="11">SpO₂ (%) · RR (scaled for display)</text>' +
+    poly(h.map(r => r.spo2), 80, 100, 'var(--ac)') +
+    poly(h.map(r => r.rr == null ? null : 80 + (r.rr - 10) / 30 * 20),
+      80, 100, 'var(--warn)');
+
+  $('risks').innerHTML =
+    '<rect x="0" y="0" width="600" height="150" fill="none" stroke="var(--bd)"/>' +
+    '<text x="10" y="14" fill="var(--mut)" font-size="11">Illustrative demo score (gaps = insufficient data)</text>' +
+    [.3,.5,.7].map(v =>
+      '<line x1="0" x2="600" y1="' + (135-v*115) +
+      '" y2="' + (135-v*115) +
+      '" stroke="' + (v>=.7 ? 'var(--crit)' : 'var(--warn)') +
+      '" stroke-dasharray="5 5"/>' +
+      '<text x="555" y="' + (130-v*115) +
+      '" fill="var(--mut)" font-size="10">' + v + '</text>'
+    ).join('') +
+    poly(S.risk, 0, 1, 'var(--ac)');
+}
+
+function update() {
+  $('clock').textContent = 'sim time ' + clock();
+  drawCharts();
+}
+
+function loop() {
+  clearInterval(timer);
+
+  if (S.run) {
+    timer = setInterval(tick, 1000 / Number($('speed').value));
+  }
+}
+
+$('go').onclick = () => {
+  S.run = !S.run;
+  $('go').textContent = S.run ? '⏸ Pause' : '▶ Start';
+
+  if (S.run && S.t === 0) {
+    log('system', 'streaming started · scenario=' + $('scenario').value);
+  }
+
+  loop();
+};
+
+$('step').onclick = () => {
+  S.run = false;
+  $('go').textContent = '▶ Start';
+  loop();
+  tick();
+};
+
+$('reset').onclick = () => init();
+
+$('test').onclick = () =>
+  raise(
+    'critical',
+    'TEST ALERT · Bed 12: simulated critical deterioration. This is a UI-only test alert; no SNS email is sent.',
+    'On-call doctor + bedside nurse',
+    true
+  );
+
+$('speed').onchange = loop;
+
+$('scenario').onchange = () => {
+  let v = $('scenario').value;
+  init();
+  $('scenario').value = v;
+  log('system', 'scenario selected: ' + v);
+  S.run = true;
+  $('go').textContent = '⏸ Pause';
+  loop();
+};
+
+/*
+ * Publish one valid synthetic observation to AWS.
+ * The publisher API validates and sends it to AWS IoT Core.
+ */
+$('publish').onclick = async () => {
+  const button = $('publish');
+  const status = $('awsStatus');
+
+  // Use the newest observation with valid numeric SpO₂ and respiratory rate.
+  const observation = [...S.hist].reverse().find(r =>
+    Number.isFinite(r.spo2) &&
+    Number.isFinite(r.rr) &&
+    r.spo2 >= 50 && r.spo2 <= 100 &&
+    r.rr >= 0 && r.rr <= 80
+  );
+
+  if (!observation) {
+    status.textContent =
+      'AWS: No valid reading yet. Press Start or Step, then try again.';
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = 'AWS: Publishing synthetic observation…';
+
+  try {
+    const response = await fetch(PUBLISH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        is_synthetic: true,
+        patient_id: 'SYNTH-BROWSER-' + Date.now(),
+        timestamp: new Date().toISOString(),
+        resp_rate: Math.round(observation.rr),
+        spo2: Math.round(observation.spo2)
+      })
+    });
+
+    let result;
+
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error('The server returned an unreadable response.');
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || ('HTTP ' + response.status)
+      );
+    }
+
+    status.textContent =
+      'AWS: Published successfully to ' +
+      (result.topic || 'demo/tbi/observations');
+
+    log(
+      'aws-publisher',
+      'synthetic observation published to IoT Core; patient=' +
+      (result.patient_id || 'SYNTH-BROWSER') +
+      ', SpO₂=' + Math.round(observation.spo2) +
+      '%, RR=' + Math.round(observation.rr)
+    );
+
+  } catch (error) {
+    console.error('AWS publish error:', error);
+
+    status.textContent =
+      'AWS publish failed: ' + error.message +
+      '. Check the API, CORS configuration, and network.';
+
+    log('aws-publisher', 'publish failed: ' + error.message);
+
+  } finally {
+    button.disabled = false;
+  }
+};
+
+function downloadReport() {
+  const content = [
+    'SIMULATION ONLY — NOT A MEDICAL RECORD',
+    'Scenario: ' + $('scenario').selectedOptions[0].textContent,
+    'Simulated time: ' + clock(),
+    'Readings: ' + S.hist.length,
+    'Invalid SpO₂ values masked: ' + S.masked,
+    '',
+    'Recent synthetic log:',
+    ...S.logs.slice(-80)
+  ].join('\n');
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(
+    new Blob([content], {type:'text/plain'})
+  );
+  a.download = 'icu_simulation_report.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  log('system', 'simulation report downloaded');
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Core (installed & verified in the build sandbox)
+numpy>=2.0
+pandas>=2.2
+scipy>=1.13
+scikit-learn>=1.5
+matplotlib>=3.8
+PyYAML>=6.0
+joblib>=1.4
+boto3>=1.36.0
+# Needed for the parts that were NOT executable in the build sandbox (see BUILD_STATUS.md)
+torch>=2.3          # CPU build is enough
+mlflow>=2.14,<3  # MLflow 3 disables the file store used by the documented local workflow
+fastapi>=0.111
+uvicorn>=0.30
+pydantic>=2.7
+httpx>=0.27         # FastAPI TestClient
+streamlit>=1.36
+streamlit-autorefresh>=1.0.1
+plotly>=5.22
+pytest>=8.0
+# Optional: xgboost, shap, torch-geometric, pandera (documented fallbacks exist for each)

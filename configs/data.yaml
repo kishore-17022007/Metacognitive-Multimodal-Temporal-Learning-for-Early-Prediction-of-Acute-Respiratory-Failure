@@ -1,0 +1,26 @@
+# Synthetic data + outcome definition. ALL SYNTHETIC; outcome rule is NOT a validated clinical criterion.
+seed: 42
+profiles:
+  dev:      {n_patients: 800,  stay_hours_min: 48, stay_hours_max: 96}
+  research: {n_patients: 5000, stay_hours_min: 48, stay_hours_max: 168}
+event_fraction: 0.35
+abrupt_event_fraction: 0.2      # events without a physiological prodrome (hard to predict)
+unknown_outcome_fraction: 0.03
+injection:                      # controlled data-quality problems
+  extra_missing_rate: 0.05
+  duplicate_rate: 0.01
+  conflicting_duplicate_rate: 0.003
+  unit_error_rate: 0.015
+  invalid_rate: 0.004
+  outlier_rate: 0.003
+  bad_dtype_rate: 0.005
+  corrupted_rate: 0.002
+  bad_timestamp_rate: 0.002
+outcome:
+  horizon_hours: 6
+  n_intervals: 6                # discrete-time survival / trajectory intervals (1 h each)
+  window_length: 12             # observations per window
+  min_observations: 3
+  stride: 2                     # prediction index every N observations
+split:
+  fractions: {train: 0.55, validation: 0.15, calibration: 0.15, test: 0.15}

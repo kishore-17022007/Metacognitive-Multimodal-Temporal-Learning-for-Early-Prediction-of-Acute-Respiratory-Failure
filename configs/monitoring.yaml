@@ -1,0 +1,9 @@
+drift: {psi_warn: 0.1, psi_alert: 0.25, ks_alpha: 0.01, missing_rate_delta_alert: 0.10}
+data_quality: {max_missing_rate: 0.30, max_invalid_rate: 0.05, max_duplicate_rate: 0.02}
+latency: {p95_alert_ms: 250}
+performance: {min_matured_labels: 50, auroc_drop_alert: 0.10, ece_alert: 0.15}
+stream_shift:            # per-patient stream monitor (PSI/KS are for cohort-level reference-vs-current comparisons)
+  baseline_obs: 8
+  recent_obs: 8
+  z_alert: 1.5           # shift of recent mean vs pre-onset mean, in units of reference-population SD
+  min_features: 2

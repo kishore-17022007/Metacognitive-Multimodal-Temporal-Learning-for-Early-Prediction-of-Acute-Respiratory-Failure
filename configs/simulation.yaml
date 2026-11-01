@@ -1,0 +1,2 @@
+default_speed: 60            # simulated seconds advanced per wall second
+scenarios: [normal, increasing_instability, missing_data, abnormal_inputs, gradual_drift, abrupt_drift, high_latency]
