@@ -1,53 +1,57 @@
 # Metacognitive Multimodal Temporal Learning for Early Prediction of Acute Respiratory Failure in TBI
 
-A research and MLOps prototype for early prediction of Acute Respiratory Failure (ARF) in Traumatic Brain Injury (TBI) patients using temporal machine learning, physiological feature relationships, and model reliability assessment.
+## 1. Project Overview
 
-**Dataset:** Synthetic ICU data  
-**Purpose:** Academic research and MLOps demonstration only. Not a clinically validated diagnostic tool.
+This project presents a multimodal temporal machine learning and MLOps prototype for early prediction of Acute Respiratory Failure (ARF) in patients with Traumatic Brain Injury (TBI).
 
-## System Architecture
+The research architecture combines a Transformer for learning temporal patterns with a Physiological Graph Attention Network (GAT) for modelling relationships between clinical features. A reliability assessment layer incorporates uncertainty estimation, out-of-distribution (OOD) detection, and prediction confidence.
+
+The project uses synthetic ICU data for model development, evaluation, and cloud deployment demonstrations.
+
+### Machine Learning Workflow
 
 ```mermaid
 flowchart TD
-    A["Synthetic Patient Data"] --> B["Amazon S3"]
-    B --> C["Data Preprocessing & Validation"]
-
-    C --> D["Temporal Transformer"]
-    C --> E["Physiological GAT"]
-
-    D --> F["Gated Fusion & Prediction"]
-    E --> F
-
-    F --> G["Reliability Assessment"]
-    G --> H["Model Artifacts & Registry"]
-
-    H --> I["AWS Lambda"]
-    I --> J["Amazon API Gateway"]
-    J --> K["Prediction API"]
-
-    K --> L["Streamlit Dashboard"]
-
-    I --> M["Amazon CloudWatch"]
-    M --> N["Amazon SNS Alerts"]
-
-    O["AWS IoT Core"] --> I
+    A["Synthetic ICU Data"] --> B["Data Preprocessing"]
+    B --> C["Temporal Transformer"]
+    B --> D["Physiological GAT"]
+    C --> E["Gated Fusion and Prediction"]
+    D --> E
+    E --> F["Reliability Assessment"]
+    F --> G["Model Evaluation and Versioning"]
+    G --> H["Registered Inference Model"]
 ```
 
-## Technologies Used
+## 2. AWS Cloud Architecture and Workflow
 
-- **Machine Learning:** Python, Scikit-learn, PyTorch
-- **Backend:** FastAPI, AWS Lambda, API Gateway
-- **Cloud Storage:** Amazon S3
-- **Monitoring:** Amazon CloudWatch, Amazon SNS
-- **IoT Integration:** AWS IoT Core
-- **Dashboard:** Streamlit
-- **Experiment Tracking:** MLflow
+```mermaid
+flowchart TD
+    A["Synthetic Data and Model Artifacts"] --> B["Amazon S3"]
+    B --> C["AWS Lambda - Inference"]
+    D["Client / Dashboard"] --> E["Amazon API Gateway"]
+    E --> C
+    C --> F["Prediction Response"]
+    F --> D
+    G["AWS IoT Core"] --> H["IoT Processor Lambda"]
+    H --> B
+    C --> I["Amazon CloudWatch"]
+    H --> I
+    I --> J["Amazon SNS Alerts"]
+```
 
-## Key Features
+This workflow demonstrates cloud storage, serverless inference, API access, IoT data processing, logging, and alert integration. The Transformer-GAT research model is developed separately from the registered CPU-based inference model used by the serving workflow.
 
-- Temporal patient observation modelling.
-- Transformer and physiological GAT-based research architecture.
-- Prediction reliability, uncertainty, and OOD assessment.
-- Model evaluation, versioning, and experiment tracking.
-- AWS-based inference and monitoring demonstration.
+## 3. AWS Services and Their Functions
+
+| AWS Service | Purpose in the Project |
+|---|---|
+| **Amazon S3** | Stores synthetic data, model artifacts, and project files. |
+| **AWS Lambda** | Runs serverless inference and IoT processing functions. |
+| **Amazon API Gateway** | Provides an API endpoint to access prediction services. |
+| **AWS IoT Core** | Supports ingestion of IoT messages and simulated patient data. |
+| **Amazon CloudWatch** | Collects execution logs and monitoring information. |
+| **Amazon SNS** | Supports notification and alert integration. |
+| **Amazon ECR** | Stores container images for cloud deployment workflows. |
+| **AWS Amplify** | Supports frontend hosting and dashboard deployment. |
+| **AWS IAM** | Manages roles, permissions, and secure service access. |
 
